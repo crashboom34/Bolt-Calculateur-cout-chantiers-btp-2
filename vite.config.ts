@@ -4,9 +4,12 @@ import path from 'path';
 
 // https://vitejs.dev/config/
 const repoName = process.env.GITHUB_REPOSITORY?.split('/')?.[1];
+const isGitHubActions = process.env.GITHUB_ACTIONS === 'true';
 
-export default defineConfig({
-  base: repoName ? `/${repoName}/` : '/',
+export default defineConfig(({ command }) => ({
+  base: command === 'build'
+    ? (repoName && isGitHubActions ? `/${repoName}/` : './')
+    : '/',
   plugins: [react()],
   resolve: {
     alias: {
@@ -16,4 +19,4 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
-});
+}));
