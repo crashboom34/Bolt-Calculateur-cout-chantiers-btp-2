@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { PosteTravail } from '../domain/api';
+import { POSTE_TYPE_DEFINITIONS, POSTE_TYPE_ORDER, computeChargePonderee, type PosteTravailType } from '@/domain/posteTypes';
 
 interface PostesFormProps {
   value: PosteTravail[];
@@ -7,9 +8,10 @@ interface PostesFormProps {
 }
 
 const PostesForm: React.FC<PostesFormProps> = ({ value, onChange }) => {
-  const [newPoste, setNewPoste] = useState<{ nom: string; charge: string }>({
+  const [newPoste, setNewPoste] = useState<{ nom: string; charge: string; typePoste: PosteTravailType }>({
     nom: '',
-    charge: ''
+    charge: '',
+    typePoste: 'standard'
   });
   const [errors, setErrors] = useState<{ nom?: string; charge?: string }>({});
 
@@ -37,13 +39,14 @@ const PostesForm: React.FC<PostesFormProps> = ({ value, onChange }) => {
       const newPosteItem: PosteTravail = {
         id: crypto.randomUUID(),
         nom: newPoste.nom.trim(),
-        charge: parseFloat(newPoste.charge)
+        charge: parseFloat(newPoste.charge),
+        typePoste: newPoste.typePoste
       };
-      
+
       onChange([...value, newPosteItem]);
-      
+
       // Réinitialiser le formulaire
-      setNewPoste({ nom: '', charge: '' });
+      setNewPoste({ nom: '', charge: '', typePoste: 'standard' });
       setErrors({});
     }
   };
@@ -52,7 +55,7 @@ const PostesForm: React.FC<PostesFormProps> = ({ value, onChange }) => {
     onChange(value.filter(poste => poste.id !== id));
   };
 
-  const handleEditPoste = (id: string, field: 'nom' | 'charge', newValue: string) => {
+  const handleEditPoste = (id: string, field: 'nom' | 'charge' | 'typePoste', newValue: string) => {
     const updatedPostes = value.map(poste => {
       if (poste.id === id) {
         if (field === 'nom') {
@@ -62,11 +65,13 @@ const PostesForm: React.FC<PostesFormProps> = ({ value, onChange }) => {
           if (!isNaN(chargeValue) && chargeValue >= 0) {
             return { ...poste, charge: chargeValue };
           }
+        } else if (field === 'typePoste') {
+          return { ...poste, typePoste: newValue as PosteTravailType };
         }
       }
       return poste;
     });
-    
+
     onChange(updatedPostes);
   };
 
@@ -78,7 +83,9 @@ const PostesForm: React.FC<PostesFormProps> = ({ value, onChange }) => {
         <thead>
           <tr className="bg-gray-100">
             <th className="text-left p-2 border">Nom</th>
+            <th className="text-left p-2 border">Type</th>
             <th className="text-left p-2 border">Charge (h)</th>
+            <th className="text-left p-2 border">Charge pondérée (h)</th>
             <th className="text-left p-2 border">Actions</th>
           </tr>
         </thead>
@@ -94,6 +101,19 @@ const PostesForm: React.FC<PostesFormProps> = ({ value, onChange }) => {
                 />
               </td>
               <td className="p-2 border">
+                <select
+                  value={poste.typePoste ?? 'standard'}
+                  onChange={(e) => handleEditPoste(poste.id, 'typePoste', e.target.value)}
+                  className="w-full p-1 border rounded"
+                >
+                  {POSTE_TYPE_ORDER.map((type) => (
+                    <option key={type} value={type}>
+                      {POSTE_TYPE_DEFINITIONS[type].label}
+                    </option>
+                  ))}
+                </select>
+              </td>
+              <td className="p-2 border">
                 <input
                   type="number"
                   min="0"
@@ -102,6 +122,9 @@ const PostesForm: React.FC<PostesFormProps> = ({ value, onChange }) => {
                   onChange={(e) => handleEditPoste(poste.id, 'charge', e.target.value)}
                   className="w-full p-1 border rounded"
                 />
+              </td>
+              <td className="p-2 border text-right">
+                {computeChargePonderee(poste.charge, poste.typePoste).toFixed(2)}
               </td>
               <td className="p-2 border">
                 <button
@@ -127,6 +150,19 @@ const PostesForm: React.FC<PostesFormProps> = ({ value, onChange }) => {
               {errors.nom && <p className="text-red-500 text-xs mt-1">{errors.nom}</p>}
             </td>
             <td className="p-2 border">
+              <select
+                value={newPoste.typePoste}
+                onChange={(e) => setNewPoste({ ...newPoste, typePoste: e.target.value as PosteTravailType })}
+                className="w-full p-1 border rounded"
+              >
+                {POSTE_TYPE_ORDER.map((type) => (
+                  <option key={type} value={type}>
+                    {POSTE_TYPE_DEFINITIONS[type].label}
+                  </option>
+                ))}
+              </select>
+            </td>
+            <td className="p-2 border">
               <input
                 type="number"
                 min="0"
@@ -137,6 +173,11 @@ const PostesForm: React.FC<PostesFormProps> = ({ value, onChange }) => {
                 className={`w-full p-1 border rounded ${errors.charge ? 'border-red-500' : ''}`}
               />
               {errors.charge && <p className="text-red-500 text-xs mt-1">{errors.charge}</p>}
+            </td>
+            <td className="p-2 border text-right text-gray-500">
+              {newPoste.charge
+                ? computeChargePonderee(parseFloat(newPoste.charge) || 0, newPoste.typePoste).toFixed(2)
+                : '0.00'}
             </td>
             <td className="p-2 border">
               <button
