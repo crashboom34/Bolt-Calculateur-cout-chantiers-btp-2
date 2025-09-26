@@ -20,7 +20,7 @@ interface DataTableProps<T> {
   onRowClick?: (item: T) => void;
 }
 
-export function DataTable<T extends Record<string, any>>({
+export function DataTable<T extends Record<string, unknown>>({
   data,
   columns,
   searchable = true,
@@ -42,9 +42,10 @@ export function DataTable<T extends Record<string, any>>({
 
     // Recherche globale
     if (searchTerm) {
+      const lowerSearch = searchTerm.toLowerCase();
       filtered = filtered.filter(item =>
         Object.values(item).some(value =>
-          String(value).toLowerCase().includes(searchTerm.toLowerCase())
+          String(value ?? '').toLowerCase().includes(lowerSearch)
         )
       );
     }
@@ -52,22 +53,34 @@ export function DataTable<T extends Record<string, any>>({
     // Filtres par colonne
     Object.entries(filters).forEach(([key, value]) => {
       if (value) {
-        filtered = filtered.filter(item =>
-          String(item[key]).toLowerCase().includes(value.toLowerCase())
-        );
+        const lowerValue = value.toLowerCase();
+        filtered = filtered.filter(item => {
+          const record = item as Record<string, unknown>;
+          return String(record[key] ?? '').toLowerCase().includes(lowerValue);
+        });
       }
     });
 
     // Tri
     if (sortConfig) {
-      filtered.sort((a, b) => {
-        const aValue = a[sortConfig.key];
-        const bValue = b[sortConfig.key];
-        
-        if (aValue < bValue) {
+      filtered = [...filtered].sort((a, b) => {
+        const key = sortConfig.key as keyof T;
+        const aValue = a[key];
+        const bValue = b[key];
+
+        if (typeof aValue === 'number' && typeof bValue === 'number') {
+          return sortConfig.direction === 'asc'
+            ? aValue - bValue
+            : bValue - aValue;
+        }
+
+        const aString = String(aValue ?? '');
+        const bString = String(bValue ?? '');
+
+        if (aString < bString) {
           return sortConfig.direction === 'asc' ? -1 : 1;
         }
-        if (aValue > bValue) {
+        if (aString > bString) {
           return sortConfig.direction === 'asc' ? 1 : -1;
         }
         return 0;
@@ -157,9 +170,11 @@ export function DataTable<T extends Record<string, any>>({
               >
                 {columns.map((column, colIndex) => (
                   <td key={colIndex} className="px-6 py-4 whitespace-nowrap">
-                    {column.render 
+                    {column.render
                       ? column.render(item)
-                      : String(item[column.key] || '-')
+                      : String(
+                          (item as Record<string, unknown>)[column.key as string] ?? '-'
+                        )
                     }
                   </td>
                 ))}

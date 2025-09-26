@@ -175,7 +175,6 @@ export const ChantiersManager: React.FC<ChantiersManagerProps> = ({
           salaries={salaries}
           materiaux={materiaux}
           sousTraitants={sousTraitants}
-          sousTraitants={sousTraitants}
           onSave={editingChantier ? modifierChantier : ajouterChantier}
           onCancel={() => {
             setShowForm(false);

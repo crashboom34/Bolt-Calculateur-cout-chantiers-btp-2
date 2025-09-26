@@ -23,14 +23,20 @@ export const exportToJSON = (data: {
   URL.revokeObjectURL(url);
 };
 
-export const exportToCSV = (data: any[], filename: string, headers: string[]) => {
+export const exportToCSV = <T extends Record<string, unknown>>(
+  data: T[],
+  filename: string,
+  headers: (keyof T & string)[]
+) => {
   const csvContent = [
     headers.join(','),
     ...data.map(row => headers.map(header => {
-      const value = row[header] || '';
-      return typeof value === 'string' && value.includes(',') 
-        ? `"${value}"` 
-        : value;
+      const rawValue = row[header];
+      if (rawValue === undefined || rawValue === null) {
+        return '';
+      }
+      const stringValue = String(rawValue);
+      return stringValue.includes(',') ? `"${stringValue}"` : stringValue;
     }).join(','))
   ].join('\n');
   
@@ -43,12 +49,12 @@ export const exportToCSV = (data: any[], filename: string, headers: string[]) =>
   URL.revokeObjectURL(url);
 };
 
-export const importFromJSON = (file: File): Promise<any> => {
+export const importFromJSON = <T = unknown>(file: File): Promise<T> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const data = JSON.parse(e.target?.result as string);
+        const data = JSON.parse(e.target?.result as string) as T;
         resolve(data);
       } catch (error) {
         reject(new Error('Fichier JSON invalide'));

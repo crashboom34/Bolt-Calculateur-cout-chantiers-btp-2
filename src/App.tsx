@@ -14,6 +14,7 @@ import { SalarieSchema, MateriauSchema, ChantierSchema, SousTraitantSchema, Sala
 import { z } from 'zod';
 import { newId } from './lib/id';
 import { estimerChantier, type EstimationResponse, type PosteTravail } from '@/domain/api';
+import { formatEuro } from './utils/calculsFiscaux';
 
 function App() {
   const [activeTab, setActiveTab] = useState(() => {
@@ -201,7 +202,7 @@ function App() {
                     <p>
                       Estimation totale HT :
                       {' '}
-                      {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(estimation.totalHT)}
+                      {formatEuro(estimation.totalHT)}
                     </p>
                     <p>Marge estimée : {estimation.margeEstimee}%</p>
                     {estimation.postes.length > 0 && (
@@ -223,13 +224,13 @@ function App() {
                                 <tr key={poste.id} className="border-b border-emerald-100">
                                   <td className="border px-2 py-1">{label}</td>
                                   <td className="border px-2 py-1 text-right">
-                                    {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(poste.coutMateriaux)}
+                                    {formatEuro(poste.coutMateriaux)}
                                   </td>
                                   <td className="border px-2 py-1 text-right">
-                                    {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(poste.coutMainOeuvre)}
+                                    {formatEuro(poste.coutMainOeuvre)}
                                   </td>
                                   <td className="border px-2 py-1 text-right font-medium">
-                                    {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(sousTotal)}
+                                    {formatEuro(sousTotal)}
                                   </td>
                                 </tr>
                               );

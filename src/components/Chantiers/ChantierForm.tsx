@@ -17,6 +17,15 @@ interface ChantierFormProps {
   onCancel: () => void;
 }
 
+type TauxTVAOption = '5.5' | '10' | '20';
+
+interface NewMateriauState {
+  materiauId: string;
+  quantite: string;
+  prixUnitaireReel: string;
+  tauxTVA: TauxTVAOption;
+}
+
 export const ChantierForm: React.FC<ChantierFormProps> = ({
   chantier,
   salaries,
@@ -75,11 +84,11 @@ export const ChantierForm: React.FC<ChantierFormProps> = ({
   // États pour les formulaires d'ajout
   const [selectedSalarieId, setSelectedSalarieId] = useState('');
   const [selectedSousTraitantId, setSelectedSousTraitantId] = useState('');
-  const [newMateriau, setNewMateriau] = useState({
+  const [newMateriau, setNewMateriau] = useState<NewMateriauState>({
     materiauId: '',
     quantite: '',
     prixUnitaireReel: '',
-    tauxTVA: '20' as const
+    tauxTVA: '20'
   });
   const [newSousTraitant, setNewSousTraitant] = useState({
     sousTraitantId: '',
@@ -780,12 +789,17 @@ export const ChantierForm: React.FC<ChantierFormProps> = ({
                   step="0.01"
                   value={newMateriau.prixUnitaireReel}
                   onChange={(e) => setNewMateriau({ ...newMateriau, prixUnitaireReel: e.target.value })}
-                  placeholder="Prix réel (opt.)"
+                  placeholder="Prix réel (optionnel)"
                   className="px-3 py-2 border rounded-md focus:ring-2 focus:ring-orange-500"
                 />
                 <select
                   value={newMateriau.tauxTVA}
-                  onChange={(e) => setNewMateriau({ ...newMateriau, tauxTVA: e.target.value as any })}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '5.5' || value === '10' || value === '20') {
+                      setNewMateriau({ ...newMateriau, tauxTVA: value });
+                    }
+                  }}
                   className="px-3 py-2 border rounded-md focus:ring-2 focus:ring-orange-500"
                 >
                   <option value="5.5">TVA 5,5%</option>
