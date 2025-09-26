@@ -56,6 +56,7 @@ function App() {
   const [postes, setPostes] = useState<PosteTravail[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [estimation, setEstimation] = useState<EstimationResponse | null>(null);
+  const [posteNameMap, setPosteNameMap] = useState<Map<string, string>>(new Map());
   const [isEstimating, setIsEstimating] = useState(false);
 
   // Synchroniser l'URL avec l'onglet actif
@@ -172,6 +173,10 @@ function App() {
                       setIsEstimating(true);
                       setError(null);
                       try {
+                        const labelsSnapshot = new Map(
+                          postes.map((poste) => [poste.id, poste.nom] as const)
+                        );
+                        setPosteNameMap(labelsSnapshot);
                         const result = await estimerChantier({ postes });
                         setEstimation(result);
                       } catch (apiError) {
@@ -199,6 +204,40 @@ function App() {
                       {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(estimation.totalHT)}
                     </p>
                     <p>Marge estimée : {estimation.margeEstimee}%</p>
+                    {estimation.postes.length > 0 && (
+                      <div className="mt-4 overflow-x-auto text-xs sm:text-sm">
+                        <table className="min-w-full border-collapse">
+                          <thead>
+                            <tr className="bg-emerald-100">
+                              <th className="border px-2 py-1 text-left">Poste</th>
+                              <th className="border px-2 py-1 text-right">Coût Matériaux</th>
+                              <th className="border px-2 py-1 text-right">Coût Main d'Œuvre</th>
+                              <th className="border px-2 py-1 text-right">Sous-total</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {estimation.postes.map((poste) => {
+                              const sousTotal = poste.coutMateriaux + poste.coutMainOeuvre;
+                              const label = posteNameMap.get(poste.id) ?? poste.nom ?? `Poste ${poste.id}`;
+                              return (
+                                <tr key={poste.id} className="border-b border-emerald-100">
+                                  <td className="border px-2 py-1">{label}</td>
+                                  <td className="border px-2 py-1 text-right">
+                                    {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(poste.coutMateriaux)}
+                                  </td>
+                                  <td className="border px-2 py-1 text-right">
+                                    {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(poste.coutMainOeuvre)}
+                                  </td>
+                                  <td className="border px-2 py-1 text-right font-medium">
+                                    {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(sousTotal)}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </div>
                 )}
                 <Simulator
