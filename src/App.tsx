@@ -15,6 +15,8 @@ import { z } from 'zod';
 import { newId } from './lib/id';
 import { estimerChantier, type EstimationResponse, type PosteTravail } from '@/domain/api';
 import { formatEuro } from './utils/calculsFiscaux';
+import { useEstimationHistory } from './hooks/useEstimationHistory';
+import { computeChargePonderee } from '@/domain/posteTypes';
 
 function App() {
   const [activeTab, setActiveTab] = useState(() => {
@@ -59,6 +61,8 @@ function App() {
   const [estimation, setEstimation] = useState<EstimationResponse | null>(null);
   const [posteNameMap, setPosteNameMap] = useState<Map<string, string>>(new Map());
   const [isEstimating, setIsEstimating] = useState(false);
+  const [targetMargin, setTargetMargin] = useState<number>(20);
+  const estimationHistory = useEstimationHistory();
 
   // Synchroniser l'URL avec l'onglet actif
   useEffect(() => {
@@ -149,11 +153,11 @@ function App() {
                   <button
                     onClick={() => {
                       setPostes([
-                        { id: newId(), nom: 'Démolition', charge: 10 },
-                        { id: newId(), nom: 'Plomberie', charge: 18 },
-                        { id: newId(), nom: 'Électricité', charge: 8 },
-                        { id: newId(), nom: 'Carrelage', charge: 22 },
-                        { id: newId(), nom: 'Peinture', charge: 12 }
+                        { id: newId(), nom: 'Démolition', charge: 10, typePoste: 'complexe' },
+                        { id: newId(), nom: 'Plomberie', charge: 18, typePoste: 'expert' },
+                        { id: newId(), nom: 'Électricité', charge: 8, typePoste: 'expert' },
+                        { id: newId(), nom: 'Carrelage', charge: 22, typePoste: 'standard' },
+                        { id: newId(), nom: 'Peinture', charge: 12, typePoste: 'leger' }
                       ]);
                       setError(null);
                       setEstimation(null);
@@ -162,6 +166,18 @@ function App() {
                   >
                     Exemple SDB
                   </button>
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    Marge cible (%)
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      step={0.5}
+                      value={targetMargin}
+                      onChange={(event) => setTargetMargin(Number(event.target.value))}
+                      className="w-24 rounded border border-gray-300 px-2 py-1"
+                    />
+                  </label>
                   <button
                     onClick={async () => {
                       if (isEstimating) {
@@ -180,6 +196,12 @@ function App() {
                         setPosteNameMap(labelsSnapshot);
                         const result = await estimerChantier({ postes });
                         setEstimation(result);
+                        const postesSnapshot = postes.map((poste) => ({ ...poste }));
+                        estimationHistory.addEntry({
+                          postes: postesSnapshot,
+                          estimation: result,
+                          targetMargin,
+                        });
                       } catch (apiError) {
                         setEstimation(null);
                         setError(apiError instanceof Error ? apiError.message : 'Une erreur est survenue lors de l\'estimation.');
@@ -204,7 +226,24 @@ function App() {
                       {' '}
                       {formatEuro(estimation.totalHT)}
                     </p>
-                    <p>Marge estimée : {estimation.margeEstimee}%</p>
+                    {(() => {
+                      const margeRealisableMontant = estimation.margeEstimee;
+                      const margeRealisablePourcentage = estimation.totalHT === 0
+                        ? 0
+                        : (margeRealisableMontant / estimation.totalHT) * 100;
+                      const ecart = margeRealisablePourcentage - targetMargin;
+                      return (
+                        <div className="mt-2 space-y-1">
+                          <p>
+                            Marge réalisable : {formatEuro(margeRealisableMontant)} ({margeRealisablePourcentage.toFixed(1)}%)
+                          </p>
+                          <p>Marge cible : {targetMargin.toFixed(1)}%</p>
+                          <p className={ecart >= 0 ? 'text-emerald-700 font-medium' : 'text-amber-700 font-medium'}>
+                            Écart : {ecart >= 0 ? '+' : ''}{ecart.toFixed(1)}%
+                          </p>
+                        </div>
+                      );
+                    })()}
                     {estimation.postes.length > 0 && (
                       <div className="mt-4 overflow-x-auto text-xs sm:text-sm">
                         <table className="min-w-full border-collapse">
@@ -214,12 +253,14 @@ function App() {
                               <th className="border px-2 py-1 text-right">Coût Matériaux</th>
                               <th className="border px-2 py-1 text-right">Coût Main d'Œuvre</th>
                               <th className="border px-2 py-1 text-right">Sous-total</th>
+                              <th className="border px-2 py-1 text-right">Charge pondérée (h)</th>
                             </tr>
                           </thead>
                           <tbody>
                             {estimation.postes.map((poste) => {
                               const sousTotal = poste.coutMateriaux + poste.coutMainOeuvre;
                               const label = posteNameMap.get(poste.id) ?? poste.nom ?? `Poste ${poste.id}`;
+                              const posteInitial = postes.find((p) => p.id === poste.id);
                               return (
                                 <tr key={poste.id} className="border-b border-emerald-100">
                                   <td className="border px-2 py-1">{label}</td>
@@ -231,6 +272,9 @@ function App() {
                                   </td>
                                   <td className="border px-2 py-1 text-right font-medium">
                                     {formatEuro(sousTotal)}
+                                  </td>
+                                  <td className="border px-2 py-1 text-right">
+                                    {posteInitial ? computeChargePonderee(posteInitial.charge, posteInitial.typePoste).toFixed(2) : '-'}
                                   </td>
                                 </tr>
                               );

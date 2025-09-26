@@ -1,6 +1,26 @@
 import { z } from 'zod';
+import { POSTE_TYPE_ORDER } from '@/domain/posteTypes';
 
 // Schémas de base
+export const PosteTravailSchema = z.object({
+  id: z.string(),
+  nom: z.string(),
+  charge: z.number().min(0),
+  typePoste: z.enum(POSTE_TYPE_ORDER).optional(),
+});
+
+export const EstimationPosteSchema = z.object({
+  id: z.string(),
+  coutMateriaux: z.number().min(0),
+  coutMainOeuvre: z.number().min(0),
+});
+
+export const EstimationResponseSchema = z.object({
+  postes: z.array(EstimationPosteSchema),
+  totalHT: z.number().min(0),
+  margeEstimee: z.number(),
+});
+
 export const SalarieSchema = z.object({
   id: z.string(),
   nom: z.string().min(1, 'Le nom est requis'),
@@ -154,8 +174,8 @@ export const SalarieFormSchema = SalarieSchema.omit({
 
 export const MateriauFormSchema = MateriauSchema.omit({ id: true });
 
-export const ChantierFormSchema = ChantierSchema.omit({ 
-  id: true, 
+export const ChantierFormSchema = ChantierSchema.omit({
+  id: true,
   dateCreation: true,
   coutMainOeuvre: true,
   coutMateriaux: true,
@@ -169,3 +189,15 @@ export type SousTraitantFormData = z.infer<typeof SousTraitantFormSchema>;
 export type SalarieFormData = z.infer<typeof SalarieFormSchema>;
 export type MateriauFormData = z.infer<typeof MateriauFormSchema>;
 export type ChantierFormData = z.infer<typeof ChantierFormSchema>;
+
+export const EstimationHistoryItemSchema = z.object({
+  id: z.string(),
+  createdAt: z.number(),
+  postes: z.array(PosteTravailSchema),
+  estimation: EstimationResponseSchema,
+  targetMargin: z.number().min(0).max(100),
+});
+
+export const EstimationHistorySchema = z.array(EstimationHistoryItemSchema);
+
+export type EstimationHistoryItem = z.infer<typeof EstimationHistoryItemSchema>;
