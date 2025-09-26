@@ -6,7 +6,9 @@ export async function getConfig(): Promise<AppConfig> {
   if (cache) return cache;
   
   try {
-    const res = await fetch('/config.json', { cache: 'no-store' });
+    const res = await fetch(`${import.meta.env.BASE_URL}config.json`, {
+      cache: 'no-store',
+    });
     if (!res.ok) return (cache = { apiBaseUrl: null });
     
     const json = await res.json();
