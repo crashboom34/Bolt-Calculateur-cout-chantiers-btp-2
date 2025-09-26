@@ -41,3 +41,15 @@ Pour basculer en production, mettez à jour `public/config.json` en renseignant 
 ```
 
 Le front consommera alors l'endpoint `/api/estimation` exposé par ce domaine.
+
+## Déploiement sur GitHub Pages
+
+Une configuration automatique est prévue pour GitHub Pages : lors d'un build exécuté
+dans un workflow GitHub Actions, la variable d'environnement `GITHUB_REPOSITORY`
+est utilisée pour déduire le sous-répertoire de publication (par exemple
+`/mon-repo/`). Le bundle généré fonctionnera ainsi à la fois en local et sur
+`https://<utilisateur>.github.io/<mon-repo>/` sans réglage manuel du `base` Vite.
+
+Veillez également à conserver le fichier `public/config.json` dans le dossier
+`dist` publié afin que l'application puisse charger sa configuration via
+`import.meta.env.BASE_URL`.
