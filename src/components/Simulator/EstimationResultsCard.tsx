@@ -1,14 +1,11 @@
 import React from 'react';
 import { EstimationResponse, PosteTravail } from '../../domain/api';
+import { formatEuro } from '../../utils/calculsFiscaux';
 
 interface EstimationResultsCardProps {
   estimation: EstimationResponse | null;
   postes: PosteTravail[];
 }
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount);
-};
 
 const EstimationResultsCard: React.FC<EstimationResultsCardProps> = ({ estimation, postes }) => {
   if (!estimation) return null;
@@ -39,9 +36,9 @@ const EstimationResultsCard: React.FC<EstimationResultsCardProps> = ({ estimatio
               return (
                 <tr key={poste.id} className="border-b">
                   <td className="p-2 border">{posteNamesMap[poste.id] || `Poste ${poste.id}`}</td>
-                  <td className="p-2 border text-right">{formatCurrency(poste.coutMateriaux)}</td>
-                  <td className="p-2 border text-right">{formatCurrency(poste.coutMainOeuvre)}</td>
-                  <td className="p-2 border text-right font-medium">{formatCurrency(sousTotal)}</td>
+                  <td className="p-2 border text-right">{formatEuro(poste.coutMateriaux)}</td>
+                  <td className="p-2 border text-right">{formatEuro(poste.coutMainOeuvre)}</td>
+                  <td className="p-2 border text-right font-medium">{formatEuro(sousTotal)}</td>
                 </tr>
               );
             })}
@@ -49,7 +46,7 @@ const EstimationResultsCard: React.FC<EstimationResultsCardProps> = ({ estimatio
           <tfoot className="bg-gray-50">
             <tr>
               <td colSpan={3} className="p-2 border text-right font-semibold">Total HT</td>
-              <td className="p-2 border text-right font-semibold">{formatCurrency(estimation.totalHT)}</td>
+              <td className="p-2 border text-right font-semibold">{formatEuro(estimation.totalHT)}</td>
             </tr>
             <tr>
               <td colSpan={3} className="p-2 border text-right font-semibold">Marge estimée</td>

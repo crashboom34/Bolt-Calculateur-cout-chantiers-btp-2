@@ -96,7 +96,7 @@ export function useLocalStorage<T>({
     };
   }, [key, data, version]);
 
-  const importData = useCallback((importedData: any) => {
+  const importData = useCallback((importedData: StorageData<unknown>) => {
     try {
       const validated = schema.parse(importedData.data);
       return saveData(validated);

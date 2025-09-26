@@ -1,4 +1,5 @@
 import { Salarie, Materiau, Chantier } from '../types';
+import { formatEuro } from '../utils/calculsFiscaux';
 
 const STORAGE_KEYS = {
   SALARIES: 'btp-calculator-salaries',
@@ -63,17 +64,17 @@ ${detailsPresences.map(detail => `
 Salarié ID: ${detail.salarieId}
 - ${detail.nombreJours} jours travaillés
 - ${detail.totalHeures}h normales${detail.totalHeuresSupp > 0 ? ` + ${detail.totalHeuresSupp}h supplémentaires` : ''}
-- Coût: ${new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(detail.coutTotal)}
+- Coût: ${formatEuro(detail.coutTotal)}
 
 Détail des présences:
 ${detail.presences.map(p => `  ${p.date}: ${p.heuresPresence}h${p.heuresSupplementaires ? ` +${p.heuresSupplementaires}h supp.` : ''}${p.commentaire ? ` (${p.commentaire})` : ''}`).join('\n')}
 `).join('\n')}
 
-Main d'œuvre: ${new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(chantier.coutMainOeuvre)}
-Matériaux: ${new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(chantier.coutMateriaux)}
-Frais généraux: ${new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format((chantier.coutMainOeuvre + chantier.coutMateriaux) * (chantier.fraisGeneraux / 100))}
+Main d'œuvre: ${formatEuro(chantier.coutMainOeuvre)}
+Matériaux: ${formatEuro(chantier.coutMateriaux)}
+Frais généraux: ${formatEuro((chantier.coutMainOeuvre + chantier.coutMateriaux) * (chantier.fraisGeneraux / 100))}
 
-COÛT TOTAL: ${new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(chantier.coutTotal)}
+COÛT TOTAL: ${formatEuro(chantier.coutTotal)}
 ${chantier.marge ? `MARGE: ${new Intl.NumberFormat('fr-FR', { style: 'percent', maximumFractionDigits: 1 }).format(chantier.marge / 100)}` : ''}
   `.trim();
 

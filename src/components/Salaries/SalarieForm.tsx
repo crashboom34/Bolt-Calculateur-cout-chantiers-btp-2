@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save, X, User } from 'lucide-react';
 import { Salarie, SalarieFormData, SalarieFormSchema } from '../../schemas';
-import { calculCompletSalaire, calculerTauxHoraire } from '../../utils/calculsFiscaux';
+import { calculCompletSalaire, calculerTauxHoraire, formatEuro } from '../../utils/calculsFiscaux';
 
 interface SalarieFormProps {
   salarie?: Salarie | null;
@@ -191,20 +191,20 @@ export const SalarieForm: React.FC<SalarieFormProps> = ({ salarie, onSave, onCan
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
               <div>
                 <span className="text-gray-600 block">Salaire brut:</span>
-                <span className="font-semibold text-blue-600">{calculs.salaireBrut.toFixed(2)} €</span>
+                <span className="font-semibold text-blue-600">{formatEuro(calculs.salaireBrut)}</span>
               </div>
               <div>
                 <span className="text-gray-600 block">Charges patronales:</span>
-                <span className="font-semibold text-orange-600">{calculs.chargesPatronales.toFixed(2)} €</span>
+                <span className="font-semibold text-orange-600">{formatEuro(calculs.chargesPatronales)}</span>
               </div>
               <div>
                 <span className="text-gray-600 block">Coût total employeur:</span>
-                <span className="font-semibold text-green-600">{calculs.coutTotal.toFixed(2)} €</span>
+                <span className="font-semibold text-green-600">{formatEuro(calculs.coutTotal)}</span>
               </div>
               <div>
                 <span className="text-gray-600 block">Taux horaire:</span>
                 <span className="font-semibold text-purple-600">
-                  {calculerTauxHoraire(calculs.coutTotal).toFixed(2)} €/h
+                  {`${formatEuro(calculerTauxHoraire(calculs.coutTotal))}/h`}
                 </span>
               </div>
             </div>
