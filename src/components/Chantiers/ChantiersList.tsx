@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit, Trash2, FileText, Download, Calendar, MapPin, TrendingUp, Users, Package } from 'lucide-react';
+import { Edit, Trash2, FileText, Calendar, MapPin, TrendingUp, Users, Package } from 'lucide-react';
 import { Chantier, Salarie, Materiau } from '../../schemas';
 import { DataTable } from '../UI/DataTable';
 import { calculerCoutsChantier } from '../../services/costEngine';
@@ -161,7 +161,7 @@ export const ChantiersList: React.FC<ChantiersListProps> = ({
         columns={columns}
         searchPlaceholder="Rechercher par référence, nom, client..."
         emptyMessage="Aucun chantier créé"
-        onRowClick={(chantier) => {
+        onRowClick={() => {
           // Optionnel: ouvrir les détails en cliquant sur la ligne
         }}
       />

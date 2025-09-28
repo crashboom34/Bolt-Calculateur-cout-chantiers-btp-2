@@ -56,7 +56,7 @@ export const importFromJSON = <T = unknown>(file: File): Promise<T> => {
       try {
         const data = JSON.parse(e.target?.result as string) as T;
         resolve(data);
-      } catch (error) {
+      } catch {
         reject(new Error('Fichier JSON invalide'));
       }
     };

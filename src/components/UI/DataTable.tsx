@@ -34,7 +34,7 @@ export function DataTable<T extends Record<string, unknown>>({
     direction: 'asc' | 'desc';
   } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters] = useState<Record<string, string>>({});
 
   // Filtrage et tri
   const processedData = useMemo(() => {

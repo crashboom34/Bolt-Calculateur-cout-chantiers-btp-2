@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Download, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Plus, Download, AlertTriangle } from 'lucide-react';
 import { Materiau } from '../../schemas';
 import { MateriauForm } from './MateriauForm';
 import { MateriauxList } from './MateriauxList';

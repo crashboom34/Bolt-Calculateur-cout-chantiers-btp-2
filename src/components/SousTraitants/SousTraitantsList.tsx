@@ -2,7 +2,6 @@ import React from 'react';
 import { Edit, Trash2, Users, Phone, Mail } from 'lucide-react';
 import { SousTraitant } from '../../schemas';
 import { DataTable } from '../UI/DataTable';
-import { formatEuro } from '../../utils/calculsFiscaux';
 
 interface SousTraitantsListProps {
   sousTraitants: SousTraitant[];

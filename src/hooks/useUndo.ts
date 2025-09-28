@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react';
 
-interface UseUndoOptions<T> {
+interface UseUndoOptions {
   maxHistory?: number;
 }
 
-export function useUndo<T>(initialState: T, options: UseUndoOptions<T> = {}) {
+export function useUndo<T>(initialState: T, options: UseUndoOptions = {}) {
   const { maxHistory = 10 } = options;
   
   const [history, setHistory] = useState<T[]>([initialState]);
