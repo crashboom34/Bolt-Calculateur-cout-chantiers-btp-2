@@ -6,13 +6,17 @@ const deepClone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
 const storageKey = (scenario: ScenarioKey): string => `${STORAGE_PREFIX}${scenario}`;
 
+ codex/enhance-btp-cost-calculator-features-3ufwlp
 // Permet de persister les scénarios en mémoire quand localStorage est indisponible (SSR, mode privé...)
 const memoryStore = new Map<ScenarioKey, Projet>();
 
+
+ main
 const getLocalStorage = (): Storage | null => {
   if (typeof window === 'undefined') {
     return null;
   }
+ codex/enhance-btp-cost-calculator-features-3ufwlp
   try {
     return window.localStorage;
   } catch (error) {
@@ -36,6 +40,12 @@ const ensureBootstrap = (scenario: ScenarioKey, storage: Storage | null): Projet
     return bootstrapMemoryScenario(scenario);
   }
 
+
+  return window.localStorage;
+};
+
+const ensureBootstrap = (storage: Storage, scenario: ScenarioKey): Projet => {
+ main
   const key = storageKey(scenario);
   const raw = storage.getItem(key);
 
@@ -59,6 +69,7 @@ const ensureBootstrap = (scenario: ScenarioKey, storage: Storage | null): Projet
   }
 };
 
+ codex/enhance-btp-cost-calculator-features-3ufwlp
 const persistScenario = (scenario: ScenarioKey, projet: Projet, storage: Storage | null): void => {
   const payload = deepClone(projet);
   if (storage) {
@@ -76,11 +87,27 @@ export const loadScenario = (scenario: ScenarioKey): Projet => {
     memoryStore.set(scenario, deepClone(projet));
   }
   return projet;
+
+export const loadScenario = (scenario: ScenarioKey): Projet => {
+  const storage = getLocalStorage();
+  if (!storage) {
+    return deepClone(DEFAULT_DATA);
+  }
+  return ensureBootstrap(storage, scenario);
+ main
 };
 
 export const saveScenario = (scenario: ScenarioKey, projet: Projet): void => {
   const storage = getLocalStorage();
+ codex/enhance-btp-cost-calculator-features-3ufwlp
   persistScenario(scenario, projet, storage);
+
+  if (!storage) {
+    return;
+  }
+  const data = deepClone(projet);
+  storage.setItem(storageKey(scenario), JSON.stringify(data));
+ main
 };
 
 export const cloneScenario = (from: ScenarioKey, to: ScenarioKey): Projet => {
@@ -90,9 +117,18 @@ export const cloneScenario = (from: ScenarioKey, to: ScenarioKey): Projet => {
 };
 
 export const resetScenario = (scenario: ScenarioKey): Projet => {
+ codex/enhance-btp-cost-calculator-features-3ufwlp
   const data = deepClone(DEFAULT_DATA);
   const storage = getLocalStorage();
   persistScenario(scenario, data, storage);
+
+  const storage = getLocalStorage();
+  const data = deepClone(DEFAULT_DATA);
+  if (!storage) {
+    return data;
+  }
+  storage.setItem(storageKey(scenario), JSON.stringify(data));
+ main
   return data;
 };
 

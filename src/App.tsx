@@ -12,6 +12,7 @@ import { ToastProvider } from './components/UI/Toast';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { SalarieSchema, MateriauSchema, ChantierSchema, SousTraitantSchema, Salarie, Materiau, Chantier, SousTraitant } from './schemas';
 import { z } from 'zod';
+ codex/enhance-btp-cost-calculator-features-3ufwlp
 
 const TAB_IDS = ['dashboard', 'simulator', 'salaries', 'materiaux', 'sous-traitants', 'chantiers'] as const;
 type TabId = typeof TAB_IDS[number];
@@ -27,6 +28,7 @@ const DEFAULT_SALARIES: Salarie[] = [];
 const DEFAULT_MATERIAUX: Materiau[] = [];
 const DEFAULT_SOUS_TRAITANTS: SousTraitant[] = [];
 const DEFAULT_CHANTIERS: Chantier[] = [];
+ main
 
 function App() {
   const allowedTabs = useMemo(() => new Set<string>(TAB_IDS), []);
