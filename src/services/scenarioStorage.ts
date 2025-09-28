@@ -6,6 +6,8 @@ const deepClone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
 const storageKey = (scenario: ScenarioKey): string => `${STORAGE_PREFIX}${scenario}`;
 
+const memoryStore = new Map<ScenarioKey, Projet>();
+
 const getLocalStorage = (): Storage | null => {
   if (typeof window === 'undefined') {
     return null;
@@ -13,12 +15,26 @@ const getLocalStorage = (): Storage | null => {
   try {
     return window.localStorage;
   } catch (error) {
-    console.warn('Accès à localStorage impossible pour les scénarios. Utilisation d’une copie en mémoire.', error);
+    console.warn(
+      'Accès à localStorage impossible pour les scénarios. Utilisation d’une copie en mémoire.',
+      error,
+    );
     return null;
   }
 };
 
-const ensureBootstrap = (storage: Storage, scenario: ScenarioKey): Projet => {
+const bootstrapMemoryScenario = (scenario: ScenarioKey): Projet => {
+  if (!memoryStore.has(scenario)) {
+    memoryStore.set(scenario, deepClone(DEFAULT_DATA));
+  }
+  return deepClone(memoryStore.get(scenario)!);
+};
+
+const ensureBootstrap = (scenario: ScenarioKey, storage: Storage | null): Projet => {
+  if (!storage) {
+    return bootstrapMemoryScenario(scenario);
+  }
+
   const key = storageKey(scenario);
   const raw = storage.getItem(key);
 
@@ -42,21 +58,28 @@ const ensureBootstrap = (storage: Storage, scenario: ScenarioKey): Projet => {
   }
 };
 
+const persistScenario = (scenario: ScenarioKey, projet: Projet, storage: Storage | null): void => {
+  const payload = deepClone(projet);
+  if (storage) {
+    storage.setItem(storageKey(scenario), JSON.stringify(payload));
+  } else {
+    memoryStore.set(scenario, payload);
+  }
+};
+
 export const loadScenario = (scenario: ScenarioKey): Projet => {
   const storage = getLocalStorage();
+  const projet = ensureBootstrap(scenario, storage);
   if (!storage) {
-    return deepClone(DEFAULT_DATA);
+    // synchroniser la mémoire pour conserver la dernière version chargée
+    memoryStore.set(scenario, deepClone(projet));
   }
-  return ensureBootstrap(storage, scenario);
+  return projet;
 };
 
 export const saveScenario = (scenario: ScenarioKey, projet: Projet): void => {
   const storage = getLocalStorage();
-  if (!storage) {
-    return;
-  }
-  const data = deepClone(projet);
-  storage.setItem(storageKey(scenario), JSON.stringify(data));
+  persistScenario(scenario, projet, storage);
 };
 
 export const cloneScenario = (from: ScenarioKey, to: ScenarioKey): Projet => {
@@ -66,12 +89,9 @@ export const cloneScenario = (from: ScenarioKey, to: ScenarioKey): Projet => {
 };
 
 export const resetScenario = (scenario: ScenarioKey): Projet => {
-  const storage = getLocalStorage();
   const data = deepClone(DEFAULT_DATA);
-  if (!storage) {
-    return data;
-  }
-  storage.setItem(storageKey(scenario), JSON.stringify(data));
+  const storage = getLocalStorage();
+  persistScenario(scenario, data, storage);
   return data;
 };
 

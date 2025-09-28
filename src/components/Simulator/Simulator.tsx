@@ -206,6 +206,10 @@ export const Simulator: React.FC = () => {
   });
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  useEffect(() => {
+    setProjet(cloneProjet(loadScenario(activeScenario)));
+  }, [activeScenario]);
+
   useDebouncedEffect(
     () => {
       saveScenario(activeScenario, projet);
@@ -241,7 +245,6 @@ export const Simulator: React.FC = () => {
 
   const switchScenario = useCallback((scenario: ScenarioKey) => {
     setActiveScenario(scenario);
-    setProjet(cloneProjet(loadScenario(scenario)));
   }, []);
 
   const updateProjet = useCallback((updater: (current: Projet) => Projet) => {
