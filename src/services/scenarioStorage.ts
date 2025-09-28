@@ -6,6 +6,7 @@ const deepClone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
 const storageKey = (scenario: ScenarioKey): string => `${STORAGE_PREFIX}${scenario}`;
 
+// Permet de persister les scénarios en mémoire quand localStorage est indisponible (SSR, mode privé...)
 const memoryStore = new Map<ScenarioKey, Projet>();
 
 const getLocalStorage = (): Storage | null => {
