@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save, X, Plus, Clock, Trash2, Calculator } from 'lucide-react';
@@ -41,7 +41,6 @@ export const ChantierForm: React.FC<ChantierFormProps> = ({
     register,
     handleSubmit,
     watch,
-    setValue,
     formState: { errors }
   } = useForm<ChantierFormData>({
     resolver: zodResolver(ChantierFormSchema),
@@ -83,7 +82,6 @@ export const ChantierForm: React.FC<ChantierFormProps> = ({
 
   // États pour les formulaires d'ajout
   const [selectedSalarieId, setSelectedSalarieId] = useState('');
-  const [selectedSousTraitantId, setSelectedSousTraitantId] = useState('');
   const [newMateriau, setNewMateriau] = useState<NewMateriauState>({
     materiauId: '',
     quantite: '',
@@ -135,8 +133,8 @@ export const ChantierForm: React.FC<ChantierFormProps> = ({
       version: chantier?.version || 1
     };
 
-    return calculerCoutsChantier(chantierTemp, salaries, materiaux, sousTraitants);
-  }, [chantierSalaries, chantierMateriaux, chantierSousTraitants, watch, chantier, salaries, materiaux, sousTraitants]);
+    return calculerCoutsChantier(chantierTemp, salaries, materiaux);
+  }, [chantierSalaries, chantierMateriaux, chantierSousTraitants, watch, chantier, salaries, materiaux]);
 
   // Gestion des salariés
   const ajouterSalarieChantier = () => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit, Trash2, User, UserCheck, UserX } from 'lucide-react';
+import { Edit, Trash2, UserCheck, UserX } from 'lucide-react';
 import { Salarie } from '../../schemas';
 import { DataTable } from '../UI/DataTable';
 import { formatEuro } from '../../utils/calculsFiscaux';

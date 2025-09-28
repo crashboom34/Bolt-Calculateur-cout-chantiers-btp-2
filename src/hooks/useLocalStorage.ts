@@ -14,6 +14,18 @@ interface StorageData<T> {
   timestamp: number;
 }
 
+const getStorage = (): Storage | null => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+  try {
+    return window.localStorage;
+  } catch (error) {
+    console.warn('Accès à localStorage impossible : fonctionnement en mémoire uniquement.', error);
+    return null;
+  }
+};
+
 export function useLocalStorage<T>({
   key,
   schema,
@@ -26,8 +38,16 @@ export function useLocalStorage<T>({
 
   // Charger les données au montage
   useEffect(() => {
+    const storage = getStorage();
+
+    if (!storage) {
+      setData(defaultValue);
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const stored = localStorage.getItem(key);
+      const stored = storage.getItem(key);
       if (!stored) {
         setData(defaultValue);
         setIsLoading(false);
@@ -67,8 +87,11 @@ export function useLocalStorage<T>({
         version,
         timestamp: Date.now()
       };
-      
-      localStorage.setItem(key, JSON.stringify(toStore));
+
+      const storage = getStorage();
+      if (storage) {
+        storage.setItem(key, JSON.stringify(toStore));
+      }
       setData(validated);
       setError(null);
       return true;
@@ -81,7 +104,8 @@ export function useLocalStorage<T>({
 
   // Réinitialiser
   const reset = useCallback(() => {
-    localStorage.removeItem(key);
+    const storage = getStorage();
+    storage?.removeItem(key);
     setData(defaultValue);
     setError(null);
   }, [key, defaultValue]);
@@ -100,11 +124,12 @@ export function useLocalStorage<T>({
     try {
       const validated = schema.parse(importedData.data);
       return saveData(validated);
-    } catch (err) {
+    } catch (error) {
+      console.error(`Error importing ${key}:`, error);
       setError('Données importées invalides');
       return false;
     }
-  }, [schema, saveData]);
+  }, [key, schema, saveData]);
 
   return {
     data,

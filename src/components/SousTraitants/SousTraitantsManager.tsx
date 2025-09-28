@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Download, RotateCcw } from 'lucide-react';
+import { Plus, Download } from 'lucide-react';
 import { SousTraitant } from '../../schemas';
 import { SousTraitantForm } from './SousTraitantForm';
 import { SousTraitantsList } from './SousTraitantsList';

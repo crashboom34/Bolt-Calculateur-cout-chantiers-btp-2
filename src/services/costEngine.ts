@@ -1,4 +1,4 @@
-import { Salarie, Materiau, Chantier, SousTraitant } from '../schemas';
+import { Salarie, Materiau, Chantier } from '../schemas';
 
 /**
  * Moteur de calcul des coûts pour les chantiers BTP
@@ -105,22 +105,31 @@ export const calculerCoutSousTraitance = (montantForfait: number): number => {
 export const calculerCoutsChantier = (
   chantier: Chantier,
   salaries: Salarie[],
-  materiaux: Materiau[],
-  sousTraitants: SousTraitant[] = []
+  materiaux: Materiau[]
 ) => {
   // Calcul coût main d'œuvre
-  let coutMainOeuvre = 0;
-  
-  chantier.salaries.forEach(cs => {
-    coutMainOeuvre += cs.coutTotal;
-  });
+  const coutMainOeuvre = chantier.salaries.reduce((total, cs) => {
+    if (cs.coutTotal > 0) {
+      return total + cs.coutTotal;
+    }
+
+    const salarie = salaries.find(s => s.id === cs.salarieId);
+    return total + (salarie?.coutTotal ?? 0);
+  }, 0);
 
   // Calcul coût matériaux
-  let coutMateriaux = 0;
-  
-  chantier.materiaux.forEach(cm => {
-    coutMateriaux += cm.coutTTC;
-  });
+  const coutMateriaux = chantier.materiaux.reduce((total, cm) => {
+    if (cm.coutTotal > 0) {
+      return total + cm.coutTotal;
+    }
+
+    const materiau = materiaux.find(m => m.id === cm.materiauId);
+    if (materiau) {
+      return total + materiau.prixUnitaire * cm.quantite;
+    }
+
+    return total;
+  }, 0);
 
   // Calcul coût sous-traitance
   let coutSousTraitance = 0;
@@ -235,14 +244,14 @@ export const simulerVariations = (
     })),
     lignesMateriaux: chantier.lignesMateriaux?.map(ligne => {
       const materiau = materiaux.find(m => m.id === ligne.materiauId);
-      if (materiau) {
-        const materiauAjuste: Materiau = {
-          ...materiau,
-          prixUnitaire: materiau.prixUnitaire * (1 + variations.prixMateriaux / 100)
-        };
+      if (!materiau) {
         return ligne;
       }
-      return ligne;
+
+      return {
+        ...ligne,
+        coutTotal: ligne.coutTotal * (1 + variations.prixMateriaux / 100)
+      };
     })
   };
 

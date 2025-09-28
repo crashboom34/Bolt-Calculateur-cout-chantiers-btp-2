@@ -71,7 +71,7 @@ export const genererDevisPDF = (
   yPosition += 15;
 
   // Calculs
-  const couts = calculerCoutsChantier(chantier, salaries, materiaux, sousTraitants);
+  const couts = calculerCoutsChantier(chantier, salaries, materiaux);
   
   // Tableau des coûts
   pdf.setFont('helvetica', 'bold');
@@ -231,7 +231,7 @@ export const genererRecapitulatifChantier = (
   }
 
   // Calculs finaux
-  const couts = calculerCoutsChantier(chantier, salaries, materiaux, sousTraitants);
+  const couts = calculerCoutsChantier(chantier, salaries, materiaux);
   yPosition += 10;
   
   pdf.setFont('helvetica', 'bold');

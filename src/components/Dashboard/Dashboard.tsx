@@ -2,7 +2,7 @@ import React from 'react';
 import { BarChart3, TrendingUp, Users, Package, MapPin, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import { Chantier, Salarie, Materiau } from '../../schemas';
 import { useKPI } from '../../hooks/useKPI';
-import { formatEuro, formatPourcentage } from '../../utils/calculsFiscaux';
+import { formatEuro } from '../../utils/calculsFiscaux';
 
 interface DashboardProps {
   chantiers: Chantier[];

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { BarChart3, Calculator, Users, Package, MapPin, UserCheck } from 'lucide-react';
 import { Header } from './components/Layout/Header';
 import { Dashboard } from './components/Dashboard/Dashboard';
@@ -12,62 +12,86 @@ import { ToastProvider } from './components/UI/Toast';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { SalarieSchema, MateriauSchema, ChantierSchema, SousTraitantSchema, Salarie, Materiau, Chantier, SousTraitant } from './schemas';
 import { z } from 'zod';
+ codex/enhance-btp-cost-calculator-features-3ufwlp
+
+const TAB_IDS = ['dashboard', 'simulator', 'salaries', 'materiaux', 'sous-traitants', 'chantiers'] as const;
+type TabId = typeof TAB_IDS[number];
+
+const normalizeHash = (value: string): string => (value.startsWith('#') ? value.slice(1) : value);
+
+const SALARIES_LIST_SCHEMA = z.array(SalarieSchema);
+const MATERIAUX_LIST_SCHEMA = z.array(MateriauSchema);
+const SOUS_TRAITANTS_LIST_SCHEMA = z.array(SousTraitantSchema);
+const CHANTIERS_LIST_SCHEMA = z.array(ChantierSchema);
+
+const DEFAULT_SALARIES: Salarie[] = [];
+const DEFAULT_MATERIAUX: Materiau[] = [];
+const DEFAULT_SOUS_TRAITANTS: SousTraitant[] = [];
+const DEFAULT_CHANTIERS: Chantier[] = [];
+ main
 
 function App() {
-  const [activeTab, setActiveTab] = useState(() => {
-    // Récupérer l'onglet depuis l'URL hash
-    const hash = window.location.hash.slice(1);
-    return ['dashboard', 'simulator', 'salaries', 'materiaux', 'sous-traitants', 'chantiers'].includes(hash) 
-      ? hash 
-      : 'dashboard';
+  const allowedTabs = useMemo(() => new Set<string>(TAB_IDS), []);
+  const [activeTab, setActiveTab] = useState<TabId>(() => {
+    const hash = normalizeHash(window.location.hash);
+    return allowedTabs.has(hash) ? (hash as TabId) : 'dashboard';
   });
 
   // Hooks de persistance avec validation Zod
   const salariesStorage = useLocalStorage({
     key: 'btp-salaries',
-    schema: z.array(SalarieSchema),
-    defaultValue: [] as Salarie[],
+    schema: SALARIES_LIST_SCHEMA,
+    defaultValue: DEFAULT_SALARIES,
     version: 1
   });
 
   const materiauxStorage = useLocalStorage({
     key: 'btp-materiaux',
-    schema: z.array(MateriauSchema),
-    defaultValue: [] as Materiau[],
+    schema: MATERIAUX_LIST_SCHEMA,
+    defaultValue: DEFAULT_MATERIAUX,
     version: 1
   });
 
   const sousTraitantsStorage = useLocalStorage({
     key: 'btp-sous-traitants',
-    schema: z.array(SousTraitantSchema),
-    defaultValue: [] as SousTraitant[],
+    schema: SOUS_TRAITANTS_LIST_SCHEMA,
+    defaultValue: DEFAULT_SOUS_TRAITANTS,
     version: 1
   });
 
   const chantiersStorage = useLocalStorage({
     key: 'btp-chantiers',
-    schema: z.array(ChantierSchema),
-    defaultValue: [] as Chantier[],
+    schema: CHANTIERS_LIST_SCHEMA,
+    defaultValue: DEFAULT_CHANTIERS,
     version: 1
   });
 
   // Synchroniser l'URL avec l'onglet actif
   useEffect(() => {
-    window.location.hash = activeTab;
+    const currentHash = normalizeHash(window.location.hash);
+    if (currentHash !== activeTab) {
+      window.location.hash = activeTab;
+    }
   }, [activeTab]);
 
   // Écouter les changements d'URL
   useEffect(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash.slice(1);
-      if (['dashboard', 'simulator', 'salaries', 'materiaux', 'sous-traitants', 'chantiers'].includes(hash)) {
-        setActiveTab(hash);
+      const hash = normalizeHash(window.location.hash);
+      if (allowedTabs.has(hash) && hash !== activeTab) {
+        setActiveTab(hash as TabId);
       }
     };
 
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
+  }, [activeTab, allowedTabs]);
+
+  const handleTabChange = useCallback((tab: string) => {
+    if (allowedTabs.has(tab) && tab !== activeTab) {
+      setActiveTab(tab as TabId);
+    }
+  }, [activeTab, allowedTabs]);
 
   const tabs = [
     { 
@@ -108,7 +132,7 @@ function App() {
         <Header />
         
         <div className="max-w-7xl mx-auto px-4 pt-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <Tabs defaultValue="dashboard" value={activeTab} onValueChange={handleTabChange}>
             <TabsList className="mb-6">
               {tabs.map((tab) => (
                 <TabsTrigger

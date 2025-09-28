@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Download, Upload, RotateCcw } from 'lucide-react';
+import { Plus, Download, RotateCcw } from 'lucide-react';
 import { Chantier, Salarie, Materiau, SousTraitant } from '../../schemas';
 import { ChantierForm } from './ChantierForm';
 import { ChantiersList } from './ChantiersList';
