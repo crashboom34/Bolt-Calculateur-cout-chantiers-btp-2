@@ -49,8 +49,8 @@ const createEmptyLine = <K extends LotCollectionKey>(key: K, params: ParamsGloba
       return {
         poste: '',
         mode: 'h_par_unite',
-        productivite: 1,
-        quantiteRef: 1,
+        productivite: 0,
+        quantiteRef: 0,
         tauxHoraireHt: params.tauxHoraireMoDefaut,
         chargesPct: params.chargesSocialesDefautPct,
       } as CollectionMap[K][number];
@@ -93,9 +93,9 @@ const cloneLibraryValue = <K extends LibraryCategory>(value: LibraryEntries[K][n
  main
 const libraryEntries: LibraryEntries = {
   mo: [
-    { label: 'Maçon', value: { poste: 'Maçon', mode: 'h_par_unite', productivite: 1, quantiteRef: 1, tauxHoraireHt: 42, chargesPct: 45 } },
-    { label: 'Manœuvre', value: { poste: 'Manœuvre', mode: 'h_par_unite', productivite: 1, quantiteRef: 1, tauxHoraireHt: 32, chargesPct: 45 } },
-    { label: "Chef d'équipe", value: { poste: "Chef d'équipe", mode: 'h_par_unite', productivite: 1, quantiteRef: 1, tauxHoraireHt: 48, chargesPct: 45 } },
+    { label: 'Maçon', value: { poste: 'Maçon', mode: 'h_par_unite', productivite: 0, quantiteRef: 0, tauxHoraireHt: 42, chargesPct: 45 } },
+    { label: 'Manœuvre', value: { poste: 'Manœuvre', mode: 'h_par_unite', productivite: 0, quantiteRef: 0, tauxHoraireHt: 32, chargesPct: 45 } },
+    { label: "Chef d'équipe", value: { poste: "Chef d'équipe", mode: 'h_par_unite', productivite: 0, quantiteRef: 0, tauxHoraireHt: 48, chargesPct: 45 } },
   ],
   engins: [
     { label: 'Pelle 1,7T', value: { type: 'Pelle 1,7T', tauxJourHt: 240, jours: 1, carburantPct: 6, maintenancePct: 4 } },
@@ -148,8 +148,22 @@ const collectionColumns: Record<LotCollectionKey, TableColumn[]> = {
         { label: 'Unités / heure', value: 'unites_par_h' },
       ],
     },
-    { key: 'productivite', header: 'Productivité', inputType: 'number', min: 0, step: 0.01, ariaLabel: 'Productivité' },
-    { key: 'quantiteRef', header: 'Quantité réf.', inputType: 'number', min: 0, step: 0.01, ariaLabel: 'Quantité de référence' },
+    {
+      key: 'productivite',
+      header: 'Ajustement manuel (h/unité)',
+      inputType: 'number',
+      min: 0,
+      step: 0.05,
+      ariaLabel: 'Ajustement manuel de productivité en heures par unité',
+    },
+    {
+      key: 'quantiteRef',
+      header: 'Quantité (m² / unité)',
+      inputType: 'number',
+      min: 0,
+      step: 0.01,
+      ariaLabel: 'Quantité totale en unités ou m²',
+    },
     { key: 'tauxHoraireHt', header: 'Taux horaire HT', inputType: 'number', min: 0, step: 0.5, ariaLabel: 'Taux horaire hors taxe' },
     { key: 'chargesPct', header: 'Charges %', inputType: 'number', min: 0, max: 100, step: 0.5, ariaLabel: 'Charges sociales en pourcentage' },
   ],
@@ -898,6 +912,13 @@ export const Simulator: React.FC = () => {
                             </tbody>
                           </table>
                         </div>
+                        {key === 'mo' && (
+                          <p className="mt-2 text-xs text-gray-500">
+                            Les coûts de main d’œuvre sont désormais estimés automatiquement à partir des quantités saisies
+                            (m², ml ou unités). Le champ «&nbsp;Ajustement manuel&nbsp;» permet de corriger ponctuellement
+                            le temps estimé (en heures par unité) si nécessaire.
+                          </p>
+                        )}
                       </div>
                     ))}
                   </div>

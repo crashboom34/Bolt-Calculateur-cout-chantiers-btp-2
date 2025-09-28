@@ -79,19 +79,102 @@ const computeMateriau = (ligne: LigneMateriau): number => {
   return quantite * pu;
 };
 
-const computeMainOeuvre = (ligne: LigneMO): number => {
-  const tauxHoraire = Number.isFinite(ligne.tauxHoraireHt) ? Math.max(ligne.tauxHoraireHt, 0) : 0;
-  const charges = Number.isFinite(ligne.chargesPct) ? Math.max(ligne.chargesPct, 0) : 0;
-  const productivite = Number.isFinite(ligne.productivite) ? Math.max(ligne.productivite, 0) : 0;
-  const quantiteRef = Number.isFinite(ligne.quantiteRef) ? Math.max(ligne.quantiteRef, 0) : 0;
+const normalizeText = (value: string): string =>
+  value
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase();
 
+interface ProductivityProfile {
+  keywords: string[];
+  heuresParUnite: number;
+}
+
+const DEFAULT_HEURES_PAR_UNITE = 0.35; // ~21 minutes par unité/m² par défaut
+
+const PRODUCTIVITY_PROFILES: ProductivityProfile[] = [
+  { keywords: ['macon', 'maçon', 'gros oeuvre', 'gros-oeuvre'], heuresParUnite: 0.4 },
+  { keywords: ['manoeuvre', 'manœuvre'], heuresParUnite: 0.32 },
+  { keywords: ['chef', 'conducteur'], heuresParUnite: 0.22 },
+  { keywords: ['terrass', 'terrassement'], heuresParUnite: 0.38 },
+  { keywords: ['coffr', 'beton'], heuresParUnite: 0.45 },
+  { keywords: ['charpent', 'ossature'], heuresParUnite: 0.5 },
+  { keywords: ['couvreur', 'toiture'], heuresParUnite: 0.42 },
+  { keywords: ['plaqu', 'placo', 'platre', 'plâtr'], heuresParUnite: 0.28 },
+  { keywords: ['isolation'], heuresParUnite: 0.25 },
+  { keywords: ['menuiserie'], heuresParUnite: 0.4 },
+  { keywords: ['peint', 'finitions'], heuresParUnite: 0.22 },
+  { keywords: ['carrel'], heuresParUnite: 0.33 },
+  { keywords: ['electric'], heuresParUnite: 0.6 },
+  { keywords: ['plomb', 'sanitaire'], heuresParUnite: 0.55 },
+  { keywords: ['hvac', 'clim', 'ventil'], heuresParUnite: 0.58 },
+];
+
+const findProfile = (poste: string): ProductivityProfile | undefined => {
+  if (!poste) {
+    return undefined;
+  }
+  const normalized = normalizeText(poste);
+  return PRODUCTIVITY_PROFILES.find((profile) =>
+    profile.keywords.some((keyword) => normalized.includes(keyword)),
+  );
+};
+
+const scaleFactorFromQuantite = (quantite: number): number => {
+  if (quantite <= 0) {
+    return 0;
+  }
+  if (quantite < 20) {
+    return 1.15;
+  }
+  if (quantite < 100) {
+    return 1;
+  }
+  if (quantite < 300) {
+    return 0.95;
+  }
+  if (quantite < 600) {
+    return 0.9;
+  }
+  return 0.85;
+};
+
+const extractUserHeuresParUnite = (ligne: LigneMO): number => {
+  const productivite = Number.isFinite(ligne.productivite) ? Math.max(ligne.productivite, 0) : 0;
   if (productivite === 0) {
     return 0;
   }
+  if (ligne.mode === 'h_par_unite') {
+    return productivite;
+  }
+  return productivite > 0 ? 1 / productivite : 0;
+};
 
-  const heures = ligne.mode === 'h_par_unite'
-    ? quantiteRef * productivite
-    : quantiteRef / productivite;
+const estimateHeuresFromQuantite = (ligne: LigneMO): number => {
+  const quantiteRef = Number.isFinite(ligne.quantiteRef) ? Math.max(ligne.quantiteRef, 0) : 0;
+  if (quantiteRef === 0) {
+    return 0;
+  }
+
+  const profile = findProfile(ligne.poste);
+  const baseHeuresParUnite = profile?.heuresParUnite ?? DEFAULT_HEURES_PAR_UNITE;
+  const userHeuresParUnite = extractUserHeuresParUnite(ligne);
+  const heuresParUnite = userHeuresParUnite > 0
+    ? baseHeuresParUnite * 0.7 + userHeuresParUnite * 0.3
+    : baseHeuresParUnite;
+
+  const scaleFactor = scaleFactorFromQuantite(quantiteRef);
+  return quantiteRef * heuresParUnite * scaleFactor;
+};
+
+const computeMainOeuvre = (ligne: LigneMO): number => {
+  const tauxHoraire = Number.isFinite(ligne.tauxHoraireHt) ? Math.max(ligne.tauxHoraireHt, 0) : 0;
+  const charges = Number.isFinite(ligne.chargesPct) ? Math.max(ligne.chargesPct, 0) : 0;
+
+  const heures = estimateHeuresFromQuantite(ligne);
+  if (heures === 0) {
+    return 0;
+  }
 
   const coutHoraireCharge = tauxHoraire * (1 + charges * PERCENT);
   return heures * coutHoraireCharge;
@@ -131,12 +214,13 @@ const computeCategories = (lot: Lot): {
     categorie: 'mo',
     designation: ligne.poste,
     quantite: Number.isFinite(ligne.quantiteRef) ? ligne.quantiteRef : null,
-    unite: ligne.mode === 'h_par_unite' ? 'unité' : 'h',
+    unite: 'unité',
     params: {
       mode: ligne.mode,
       productivite: ligne.productivite,
       tauxHoraireHt: ligne.tauxHoraireHt,
       chargesPct: ligne.chargesPct,
+      heuresEstimees: Math.round((estimateHeuresFromQuantite(ligne) + Number.EPSILON) * 100) / 100,
     },
     coutLigne: computeMainOeuvre(ligne),
   }));

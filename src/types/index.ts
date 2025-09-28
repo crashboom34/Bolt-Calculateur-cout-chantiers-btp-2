@@ -156,7 +156,7 @@ export const DEFAULT_DATA: Projet = {
         { designation: 'Acier HA Fe500', unite: 'kg', quantite: 850, puHt: 1.65 },
       ],
       mo: [
-        { poste: 'Maçon qualifié', mode: 'h_par_unite', productivite: 0.35, quantiteRef: 1200, tauxHoraireHt: 42, chargesPct: 45 },
+        { poste: 'Maçon qualifié', mode: 'h_par_unite', productivite: 0, quantiteRef: 1200, tauxHoraireHt: 42, chargesPct: 45 },
       ],
       engins: [
         { type: 'Pelle 5T', tauxJourHt: 320, jours: 3, carburantPct: 8, maintenancePct: 4 },
