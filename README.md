@@ -53,3 +53,37 @@ est utilisée pour déduire le sous-répertoire de publication (par exemple
 Veillez également à conserver le fichier `public/config.json` dans le dossier
 `dist` publié afin que l'application puisse charger sa configuration via
 `import.meta.env.BASE_URL`.
+
+## Simulateur multi-scénarios
+
+Le simulateur de coûts fournit désormais trois scénarios persistés (`A`, `B`,
+`C`) stockés dans le navigateur (`localStorage`). Chaque scénario contient les
+lots, paramètres globaux et notes. Les actions disponibles sont :
+
+- sélection d'un scénario actif,
+- clonage d'un scénario vers un autre,
+- réinitialisation à partir des données par défaut.
+
+### Paramétrage et édition
+
+- Les paramètres globaux (frais généraux, aléas, marge, remise, métrique, etc.)
+  sont éditables dans un panneau repliable avec validation des valeurs.
+- Chaque lot dispose de tableaux pour les catégories (Matériaux, MO, Engins,
+  Sous-traitance, Transport, Divers) avec ajout/suppression de lignes et saisie
+  inline.
+- Une bibliothèque d'éléments récurrents permet d'injecter rapidement des
+  références de main-d'œuvre, engins ou matériaux.
+
+### Export, import et impression
+
+- Export JSON : téléchargement de la structure complète du scénario.
+- Import JSON : remplacement du scénario courant après confirmation.
+- Export CSV : une ligne par poste de coût avec montants HT et totaux de lot.
+- Impression/PDF : feuilles A4 optimisées via `@media print`.
+
+### Analyse et synthèse
+
+- Calculs consolidés (HT, TVA, TTC, marge € / %) mis à jour en temps réel.
+- Alerte si la marge projet passe sous 10 %.
+- Analyse de sensibilité : curseurs ±5/10/15 % et graphique « tornado » Chart.js
+  indiquant l’impact sur le prix de vente HT et la marge.
