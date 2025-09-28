@@ -85,6 +85,10 @@ type LibraryEntries = {
   [K in LibraryCategory]: Array<{ label: string; value: CollectionMap[K][number] }>;
 };
 
+const cloneLibraryValue = <K extends LibraryCategory>(value: LibraryEntries[K][number]['value']): CollectionMap[K][number] => (
+  JSON.parse(JSON.stringify(value)) as CollectionMap[K][number]
+);
+
 const libraryEntries: LibraryEntries = {
   mo: [
     { label: 'Maçon', value: { poste: 'Maçon', mode: 'h_par_unite', productivite: 1, quantiteRef: 1, tauxHoraireHt: 42, chargesPct: 45 } },
@@ -477,7 +481,8 @@ export const Simulator: React.FC = () => {
     if (!entry) {
       return;
     }
-    updateLotCollection(lotId, category, (items) => [...items, entry.value]);
+    const value = cloneLibraryValue(entry.value);
+    updateLotCollection(lotId, category, (items) => [...items, value]);
   }, [libraryLotId, projet.lots, updateLotCollection]);
 
   const handlePrint = useCallback(() => {
