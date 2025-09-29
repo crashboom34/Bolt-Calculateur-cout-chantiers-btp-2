@@ -6,7 +6,7 @@ import {
   LigneSimple,
   Lot,
   ParamsGlobaux,
-  Projets
+  Projets,
   ScenarioKey,
   SCENARIO_KEYS,
 } from '@/types';
@@ -85,12 +85,10 @@ type LibraryEntries = {
   [K in LibraryCategory]: Array<{ label: string; value: CollectionMap[K][number] }>;
 };
 
- codex/enhance-btp-cost-calculator-features-3ufwlp
 const cloneLibraryValue = <K extends LibraryCategory>(value: LibraryEntries[K][number]['value']): CollectionMap[K][number] => (
   JSON.parse(JSON.stringify(value)) as CollectionMap[K][number]
 );
 
- main
 const libraryEntries: LibraryEntries = {
   mo: [
     { label: 'Maçon', value: { poste: 'Maçon', mode: 'h_par_unite', productivite: 0, quantiteRef: 0, tauxHoraireHt: 42, chargesPct: 45 } },
@@ -226,12 +224,10 @@ export const Simulator: React.FC = () => {
   });
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
- codex/enhance-btp-cost-calculator-features-3ufwlp
   useEffect(() => {
     setProjet(cloneProjet(loadScenario(activeScenario)));
   }, [activeScenario]);
 
- main
   useDebouncedEffect(
     () => {
       saveScenario(activeScenario, projet);
@@ -267,10 +263,8 @@ export const Simulator: React.FC = () => {
 
   const switchScenario = useCallback((scenario: ScenarioKey) => {
     setActiveScenario(scenario);
- codex/enhance-btp-cost-calculator-features-3ufwlp
 
     setProjet(cloneProjet(loadScenario(scenario)));
- main
   }, []);
 
   const updateProjet = useCallback((updater: (current: Projet) => Projet) => {
@@ -503,12 +497,10 @@ export const Simulator: React.FC = () => {
     if (!entry) {
       return;
     }
- codex/enhance-btp-cost-calculator-features-3ufwlp
     const value = cloneLibraryValue(entry.value);
     updateLotCollection(lotId, category, (items) => [...items, value]);
 
     updateLotCollection(lotId, category, (items) => [...items, entry.value]);
- main
   }, [libraryLotId, projet.lots, updateLotCollection]);
 
   const handlePrint = useCallback(() => {
@@ -593,7 +585,6 @@ export const Simulator: React.FC = () => {
             className="no-print rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring focus:ring-blue-400"
           >
             Export JSON
- codex/enhance-btp-cost-calculator-features-3ufwlp
           </button>
           <button
             onClick={handleExportCsv}
@@ -615,391 +606,6 @@ export const Simulator: React.FC = () => {
           </button>
         </div>
       </section>
-
-      <section className="rounded-lg bg-white p-6 shadow print:shadow-none" aria-label="Paramètres globaux">
-        <header className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Paramètres globaux</h2>
-          <button
-            onClick={() => setParamsOpen((value) => !value)}
-            className="text-sm font-medium text-blue-600 hover:underline focus:outline-none focus:ring focus:ring-blue-300"
-            aria-expanded={paramsOpen}
-          >
-            {paramsOpen ? 'Replier' : 'Déplier'}
-          </button>
-        </header>
-        {paramsOpen && (
-          <div className="mt-4 grid gap-4 md:grid-cols-3">
-            <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-              Frais généraux (%)
-              <input
-                type="number"
-                min={0}
-                max={100}
-                step={0.5}
-                value={projet.params.fraisGenerauxPct}
-                onChange={(event) => updateParams('fraisGenerauxPct', Number(event.target.value))}
-                className="rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring"
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-              Aléas (%)
-              <input
-                type="number"
-                min={0}
-                max={100}
-                step={0.5}
-                value={projet.params.aleasPct}
-                onChange={(event) => updateParams('aleasPct', Number(event.target.value))}
-                className="rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring"
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-              Marge cible (%)
-              <input
-                type="number"
-                min={0}
-                max={100}
-                step={0.5}
-                value={projet.params.margePct}
-                onChange={(event) => updateParams('margePct', Number(event.target.value))}
-                className="rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring"
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-              Remise commerciale (%)
-              <input
-                type="number"
-                min={0}
-                max={100}
-                step={0.5}
-                value={projet.params.remisePct}
-                onChange={(event) => updateParams('remisePct', Number(event.target.value))}
-                className="rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring"
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-              Charges sociales par défaut (%)
-              <input
-                type="number"
-                min={0}
-                max={100}
-                step={0.5}
-                value={projet.params.chargesSocialesDefautPct}
-                onChange={(event) => updateParams('chargesSocialesDefautPct', Number(event.target.value))}
-                className="rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring"
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-              Taux horaire MO défaut (€)
-              <input
-                type="number"
-                min={0}
-                step={0.5}
-                value={projet.params.tauxHoraireMoDefaut}
-                onChange={(event) => updateParams('tauxHoraireMoDefaut', Number(event.target.value))}
-                className="rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring"
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-              TVA par défaut
-              <select
-                value={projet.params.tvaDefautPct}
-                onChange={(event) => updateParams('tvaDefautPct', Number(event.target.value) as 10 | 20)}
-                className="rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring"
-              >
-                <option value={10}>10 %</option>
-                <option value={20}>20 %</option>
-              </select>
-            </label>
-            <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-              Métrique principale
-              <select
-                value={projet.params.metrique}
-                onChange={(event) => updateParams('metrique', event.target.value as ParamsGlobaux['metrique'])}
-                className="rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring"
-              >
-                <option value="m2">m²</option>
-                <option value="ml">ml</option>
-                <option value="unite">unité</option>
-              </select>
-            </label>
-            <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-              Surface / métrique totale
-              <input
-                type="number"
-                min={0}
-                step={0.5}
-                value={projet.params.surface ?? ''}
-                onChange={(event) => updateParams('surface', event.target.value === '' ? undefined : Number(event.target.value))}
-                className="rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring"
-              />
-            </label>
-          </div>
-        )}
-      </section>
-
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-        <div className="space-y-6">
-          <section className="rounded-lg bg-white p-6 shadow print:shadow-none" aria-label="Bibliothèque">
-            <header className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Bibliothèque d’éléments</h2>
-              <button
-                onClick={() => setLibraryOpen((value) => !value)}
-                className="text-sm font-medium text-blue-600 hover:underline focus:outline-none focus:ring focus:ring-blue-300"
-                aria-expanded={libraryOpen}
-              >
-                {libraryOpen ? 'Replier' : 'Déplier'}
-              </button>
-            </header>
-            {libraryOpen && (
-              <div className="mt-4 space-y-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  Sélectionner un lot
-                  <select
-                    className="mt-1 w-full rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring"
-                    value={libraryLotId ?? ''}
-                    onChange={(event) => setLibraryLotId(event.target.value || null)}
-                  >
-                    <option value="">Choisir…</option>
-                    {projet.lots.map((lot) => (
-                      <option key={lot.id} value={lot.id}>
-                        {lot.nom}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <div className="grid gap-4 md:grid-cols-2">
-                  {(Object.keys(libraryEntries) as LibraryCategory[]).map((category) => (
-                    <div key={category} className="rounded border border-gray-200 p-4">
-                      <h3 className="text-sm font-semibold text-gray-700">{categoriesLabels[category as LotCategoryKey]}</h3>
-                      <div className="mt-2 space-y-2">
-                        {libraryEntries[category].map((entry, index) => (
-                          <button
-                            key={entry.label}
-                            onClick={() => handleInsertFromLibrary(category, index)}
-                            className="w-full rounded border border-blue-200 bg-blue-50 px-3 py-2 text-left text-sm font-medium text-blue-700 hover:bg-blue-100 focus:outline-none focus:ring focus:ring-blue-300"
-                          >
-                            {entry.label} — Insérer
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </section>
-
-          <div className="space-y-6 print:break-after-page">
-            {projet.lots.map((lot, lotIndex) => {
-              const lotTotals = calcul.lots[lotIndex]?.totaux;
-              return (
-                <section key={lot.id} className="rounded-lg bg-white p-6 shadow print:shadow-none" aria-label={`Lot ${lot.nom}`}>
-                  <div className="flex flex-wrap items-start justify-between gap-4 border-b border-gray-200 pb-4">
-                    <div className="flex-1 min-w-[200px] space-y-2">
-                      <label className="flex flex-col text-sm font-medium text-gray-700">
-                        Nom du lot
-                        <input
-                          value={lot.nom}
-                          onChange={(event) => updateLotField(lot.id, 'nom', event.target.value)}
-                          className="mt-1 rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring"
-                        />
-                      </label>
-                      <label className="flex flex-col text-sm font-medium text-gray-700">
-                        TVA
-                        <select
-                          value={lot.tvaPct}
-                          onChange={(event) => updateLotField(lot.id, 'tvaPct', Number(event.target.value) as 10 | 20)}
-                          className="mt-1 rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring"
-                        >
-                          <option value={10}>10 %</option>
-                          <option value={20}>20 %</option>
-                        </select>
-                      </label>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <button
-                        onClick={() => duplicateLot(lot.id)}
-                        className="rounded border border-blue-200 bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700 hover:bg-blue-100 focus:outline-none focus:ring focus:ring-blue-300"
-                      >
-                        Dupliquer
-                      </button>
-                      <button
-                        onClick={() => deleteLot(lot.id)}
-                        className="rounded border border-red-200 bg-red-50 px-3 py-1 text-sm font-semibold text-red-700 hover:bg-red-100 focus:outline-none focus:ring focus:ring-red-300"
-                      >
-                        Supprimer
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 space-y-6">
-                    {COLLECTION_KEYS.map((key) => (
-                      <div key={key}>
-                        <div className="mb-2 flex items-center justify-between">
-                          <h3 className="text-base font-semibold text-gray-800">{categoriesLabels[key]}</h3>
-                          <button
-                            onClick={() => addLine(lot.id, key)}
-                            className="rounded border border-green-200 bg-green-50 px-3 py-1 text-sm font-medium text-green-700 hover:bg-green-100 focus:outline-none focus:ring focus:ring-green-300"
-                          >
-                            Ajouter une ligne
-                          </button>
-                        </div>
-                        <div className="overflow-x-auto">
-                          <table className="min-w-full divide-y divide-gray-200 text-sm">
-                            <thead className="bg-gray-50">
-                              <tr>
-                                {collectionColumns[key].map((column) => (
-                                  <th
-                                    key={column.key}
-                                    scope="col"
-                                    className="px-3 py-2 text-left font-semibold text-gray-700"
-                                  >
-                                    {column.header}
-                                  </th>
-                                ))}
-                                <th className="px-3 py-2 text-right font-semibold text-gray-700">Total</th>
-                                <th className="px-3 py-2 text-right font-semibold text-gray-700">Actions</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                              {lot[key].map((item, index) => {
-                                const columns = collectionColumns[key];
-                                const lineTotal = calcul.lots[lotIndex]?.lignes.filter((ligne) => ligne.categorie === key)[index]?.coutLigne ?? 0;
-                                return (
-                                  <tr key={index} className="align-top">
-                                    {columns.map((column) => (
-                                      <td key={column.key} className="px-3 py-2">
-                                        {column.inputType === 'select' ? (
-                                          <select
-                                            aria-label={column.ariaLabel}
-                                            value={(item as Record<string, unknown>)[column.key] as string}
-                                            onChange={(event) => updateLineValue(lot.id, key, index, column.key, event.target.value)}
-                                            className="w-full rounded border border-gray-300 px-2 py-1 focus:border-blue-500 focus:outline-none focus:ring"
-                                          >
-                                            {column.options?.map((option) => (
-                                              <option key={option.value} value={option.value}>
-                                                {option.label}
-                                              </option>
-                                            ))}
-                                          </select>
-                                        ) : (
-                                          <input
-                                            aria-label={column.ariaLabel}
-                                            type={column.inputType}
-                                            min={column.min}
-                                            max={column.max}
-                                            step={column.step}
-                                            value={(item as Record<string, unknown>)[column.key] as string | number}
-                                            onChange={(event) => updateLineValue(lot.id, key, index, column.key, column.inputType === 'number' ? Number(event.target.value) : event.target.value)}
-                                            className="w-full rounded border border-gray-300 px-2 py-1 focus:border-blue-500 focus:outline-none focus:ring"
-                                          />
-                                        )}
-                                      </td>
-                                    ))}
-                                    <td className="px-3 py-2 text-right font-semibold text-gray-900">{formatEuro(lineTotal)}</td>
-                                    <td className="px-3 py-2 text-right">
-                                      <button
-                                        onClick={() => removeLine(lot.id, key, index)}
-                                        className="rounded border border-red-200 bg-red-50 px-2 py-1 text-xs font-semibold text-red-600 hover:bg-red-100 focus:outline-none focus:ring focus:ring-red-300"
-                                      >
-                                        Supprimer
-                                      </button>
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        </div>
-                        {key === 'mo' && (
-                          <p className="mt-2 text-xs text-gray-500">
-                            Les coûts de main d’œuvre sont désormais estimés automatiquement à partir des quantités saisies
-                            (m², ml ou unités). Le champ «&nbsp;Ajustement manuel&nbsp;» permet de corriger ponctuellement
-                            le temps estimé (en heures par unité) si nécessaire.
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-6 grid gap-4 rounded border border-gray-200 bg-gray-50 p-4 text-sm">
-                    <div className="flex justify-between">
-                      <span>Total direct HT</span>
-                      <span className="font-semibold">{formatEuro(lotTotals?.direct ?? 0)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Frais généraux</span>
-                      <span className="font-semibold">{formatEuro(lotTotals?.fraisGeneraux ?? 0)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Aléas</span>
-                      <span className="font-semibold">{formatEuro(lotTotals?.aleas ?? 0)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Marge après remise</span>
-                      <span className="font-semibold">{formatEuro(lotTotals?.margeApresRemise ?? 0)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Prix de vente HT</span>
-                      <span className="font-semibold">{formatEuro(lotTotals?.pvHt ?? 0)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>TVA</span>
-                      <span className="font-semibold">{formatEuro(lotTotals?.tva ?? 0)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Total TTC</span>
-                      <span className="font-semibold">{formatEuro(lotTotals?.ttc ?? 0)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Marge (%)</span>
-                      <span className="font-semibold">{numberFormatter.format(lotTotals?.margePct ?? 0)}%</span>
-                    </div>
-                    <label className="flex flex-col gap-1 text-sm font-medium text-gray-700">
-                      Notes
-                      <textarea
-                        value={lot.notes ?? ''}
-                        onChange={(event) => updateLotField(lot.id, 'notes', event.target.value)}
-                        className="min-h-[80px] rounded border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring"
-                      />
-                    </label>
-                  </div>
-                </section>
-              );
-            })}
-            <button
-              onClick={addLot}
-              className="no-print w-full rounded border border-dashed border-blue-400 px-4 py-3 text-sm font-semibold text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring focus:ring-blue-300"
-            >
-              Ajouter un lot
-            </button>
-          </div>
-
-          </button>
-          <button
-            onClick={handleExportCsv}
-            className="no-print rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-400"
-          >
-            Export CSV
-          </button>
-          <button
-            onClick={handleImportJson}
-            className="no-print rounded border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring focus:ring-blue-400"
-          >
-            Import JSON
-          </button>
-          <button
-            onClick={handlePrint}
-            className="rounded border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring focus:ring-blue-400"
-          >
-            Imprimer / PDF
-          </button>
- main
-        </div>
-      </section>
-
- codex/enhance-btp-cost-calculator-features-3ufwlp
 
       <section className="rounded-lg bg-white p-6 shadow print:shadow-none" aria-label="Paramètres globaux">
         <header className="flex items-center justify-between">
@@ -1355,7 +961,6 @@ export const Simulator: React.FC = () => {
           </div>
         </div>
 
- main
         <aside className="flex flex-col gap-6">
           <section className="sticky top-24 rounded-lg bg-white p-6 shadow print:static print:shadow-none" aria-label="Synthèse du projet">
             <h2 className="text-lg font-semibold">Synthèse</h2>
